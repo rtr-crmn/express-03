@@ -1,8 +1,8 @@
 import AbstractDao from './AbstractDao';
 
 class BookingDao extends AbstractDao {
-  constructor(connectionFactory) {
-    super(connectionFactory);
+  constructor(unitOfWork) {
+    super(unitOfWork);
   }
   
   async saveBooking(booking) {

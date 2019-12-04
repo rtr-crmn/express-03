@@ -1,8 +1,8 @@
 import AbstractDao from './AbstractDao';
 
 class CustomerDao extends AbstractDao {
-  constructor(connectionFactory) {
-    super(connectionFactory);
+  constructor(unitOfWork) {
+    super(unitOfWork);
   }
   
   async saveCustomer(customer) {

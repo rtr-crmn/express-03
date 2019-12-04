@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { mySqlConnectionFactory } from '../data/mysql/MySqlConnectionFactory';
+import { unitOfWorkFactory } from '../data/UnitOfWorkFactory';
 import BookingDao from '../data/BookingDao';
 import CustomerDao from '../data/CustomerDao';
 
@@ -9,10 +9,7 @@ import Customer from '../models/Customer';
 
 const router = express.Router();
 
-const connectionFactory = mySqlConnectionFactory;
 
-const bookingDao = new BookingDao(connectionFactory);
-const customerDao = new CustomerDao(connectionFactory);
 
 console.error('******* test')
 
@@ -34,7 +31,17 @@ router.post('/', async function(req, res, next) {
   
   const requestData = { code: 'test-01', customerId: 1000 };
 
+  const unitOfWork = unitOfWorkFactory.create();
+
+  const bookingDao = new BookingDao(unitOfWork);
+  const customerDao = new CustomerDao(unitOfWork);
+
+  console.log('unitOfWork start');
+
+  await unitOfWork.start();
+
   try {
+
     const customer = new Customer(requestData);
 
     await customerDao.saveCustomer(customer);
@@ -44,11 +51,24 @@ router.post('/', async function(req, res, next) {
 
     await bookingDao.saveBooking(booking);
 
+    console.log('unitOfWork complete start');
+
+    await unitOfWork.complete();
+
+    console.log('unitOfWork complete end');
+
     res.send(booking);
+
   } catch (error) {
     console.error(error);
-  } finally {
+    console.log('unitOfWork rollback start');
+
+    await unitOfWork.rollback();
+
+    console.log('unitOfWork rollback end');
+
     res.end();
+
   }
 });
 
